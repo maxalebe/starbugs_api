@@ -13,7 +13,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const openaiClient = new openai.OpenAI({
     apiKey: OPENAI_API_KEY,
-})
+});
 
 const starSchema = new mongoose.Schema({
     proper: String,
@@ -78,24 +78,23 @@ app.get('/star-data', async (req, res) => {
 app.post('/api/wiki-summary', async (req, res) => {
     const { wikiUrl } = req.body;
 
-   try {
-            const response = await openaiClient.chat.completions.create({
-                model: 'gpt-4o',
-                messages: [
-                    {
-                        role: 'system',
-                    content: `gib mir einen Satz beschreibung für ${wikiUrl} `,
-                    },
-                ],
-                max_tokens: 100,
-            });
-            res.json({ text: response.choices[0].message.content });
-        } catch (error) {
-            console.error('Fehler beim Generieren des Textes:', error);
-            res.status(500).json({ error: 'Fehler bei der Textgenerierung' });
-        }
-    });
-    
+    try {
+        const response = await openaiClient.chat.completions.create({
+            model: 'gpt-4',
+            messages: [
+                {
+                    role: 'system',
+                    content: `Gib mir eine kurze Beschreibung für die Wikipedia-Seite ${wikiUrl}.`,
+                },
+            ],
+            max_tokens: 50,
+        });
+        res.json({ text: response.choices[0].message.content });
+    } catch (error) {
+        console.error('Fehler beim Generieren des Textes:', error);
+        res.status(500).json({ error: 'Fehler bei der Textgenerierung' });
+    }
+});
 
 app.get('/', (req, res) => {
     res.send('Welcome to the Starbugs API');
