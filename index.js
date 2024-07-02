@@ -1,11 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const app = express();
 const cors = require('cors');
+const app = express();
 
 const port = process.env.API_PORT || 3000;
-
 const mongoUri = process.env.MONGO_URI;
 const mongoCollection = process.env.MONGO_COLLECTION;
 
@@ -15,24 +14,35 @@ const starSchema = new mongoose.Schema({
     bay: String,
     flam: Number,
     mag: Number,
+    wikiUrl: String,
+    x0: Number,
+    y0: Number,
+    z0: Number,
 });
 
 const Star = mongoose.model('Star', starSchema, mongoCollection);
-console.log("connecting to " + mongoUri);
+
 mongoose.connect(mongoUri)
     .then(() => console.log('MongoDB connection successful'))
     .catch(err => console.error('MongoDB connection error:', err));
 
+const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5000'];
 const corsOptions = {
-    origin: process.env.FRONTEND_URL,
+    origin: function (origin, callback) {
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    }
 };
 
-app.use(cors());
+// Hier wird die CORS-Middleware eingefügt
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get('/api/constellation', async (req, res) => {
     const { constellation } = req.query;
-    console.log(`calling /api/constellation for: ${constellation}`);
     try {
         const stars = await Star.find({
             con: { $regex: constellation, $options: 'i' },
@@ -43,31 +53,27 @@ app.get('/api/constellation', async (req, res) => {
             ]
         }).sort({ mag: 1 });
         res.status(200).send(stars);
-        console.log(`Found stars: ${stars.length}`);
     } catch (error) {
-        console.error('Fehler beim Abrufen der Sterndaten:', error);
-        res.status(500).json({ message: 'Interner Serverfehler' });
+        console.error('Error fetching star data:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
 app.get('/star-data', async (req, res) => {
     try {
-      // Find stars with mag less than 8 using Mongoose
-      const filteredStars = await Star.find({ mag: { $lt: 8 } });
-  
-      // Send filtered star data as JSON to the frontend
-      res.json(filteredStars);
+        const filteredStars = await Star.find({ mag: { $lt: 8 } });
+        res.json(filteredStars);
     } catch (error) {
-      console.error('Error fetching star data:', error);
-      res.status(500).json({ message: 'Internal Server Error' }); // Adjust error message as needed
+        console.error('Error fetching star data:', error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
-  });
+});
 
 app.get('/', (req, res) => {
-    // console.log("calling root endpoint");
     res.send('Welcome to the Starbugs API');
 });
 
 app.listen(port, () => {
     console.log(`API script is running. Port ${port}`);
 });
+////dgdsgdg
