@@ -2,11 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const axios = require('axios');
 const app = express();
 
 const port = process.env.API_PORT || 3000;
 const mongoUri = process.env.MONGO_URI;
 const mongoCollection = process.env.MONGO_COLLECTION;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const starSchema = new mongoose.Schema({
     proper: String,
@@ -37,7 +39,6 @@ const corsOptions = {
     }
 };
 
-// Hier wird die CORS-Middleware eingefügt
 app.use(cors(corsOptions));
 app.use(express.json());
 
@@ -69,6 +70,34 @@ app.get('/star-data', async (req, res) => {
     }
 });
 
+app.post('/api/wiki-summary', async (req, res) => {
+    const { wikiUrl } = req.body;
+
+    const OPENAI_API_URL = 'https://api.openai.com/v1/completions';
+    const requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENAI_API_KEY}`
+        },
+        data: JSON.stringify({
+            prompt: `Summarize the Wikipedia page at ${wikiUrl} in two lines.`,
+            max_tokens: 50,
+            temperature: 0.3
+        }),
+        url: OPENAI_API_URL
+    };
+
+    try {
+        const response = await axios(requestOptions);
+        const summary = response.data.choices[0].text.trim();
+        res.status(200).json({ summary });
+    } catch (error) {
+        console.error('Error fetching wiki summary:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
 app.get('/', (req, res) => {
     res.send('Welcome to the Starbugs API');
 });
@@ -76,4 +105,3 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`API script is running. Port ${port}`);
 });
-////dgdsgdg
