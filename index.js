@@ -30,7 +30,7 @@ const starSchema = new mongoose.Schema({
 const Star = mongoose.model('Star', starSchema, mongoCollection);
 
 // CORS Setup
-const allowedOrigins = ["*"];
+const allowedOrigins = ["*" ];
 const corsOptions = {
   origin: function (origin, callback) {
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
