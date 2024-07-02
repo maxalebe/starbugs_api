@@ -61,7 +61,7 @@ app.get('/api/constellation', async (req, res) => {
 
 app.get('/star-data', async (req, res) => {
     try {
-        const filteredStars = await Star.find({ mag: { $lt: 8 } });
+        const filteredStars = await Star.find({ mag: { $lt: 7 } });
         res.json(filteredStars);
     } catch (error) {
         console.error('Error fetching star data:', error);
