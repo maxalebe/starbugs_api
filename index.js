@@ -96,37 +96,6 @@ app.post('/api/wiki-summary', async (req, res) => {
     });
     
 
-    // app.post('/api/generate-text', async (req, res) => {
-    //     const { starsign } = req.body;
-    
-    //     try {
-    //         const response = await openaiClient.chat.completions.create({
-    //             model: 'gpt-4o',
-    //             messages: [
-    //                 {
-    //                     role: 'system',
-    //                 content: `Gib mir eine spezifische und detaillierte Beschreibung in 100 wörtern für das Sternzeichen ${starsign}. Die Beschreibung soll die themen behandeln Welche Sterne das Sternzeichen bilden, welcher der hellste und größte Stern ist, seit wann das Sternzeichen bekannt ist, die Histeroische Hintergründe und Entdeckungsgeschichten, woher der Name kommt `,
-    //                 },
-    //             ],
-    //             max_tokens: 400,
-    //         });
-    //         res.json({ text: response.choices[0].message.content });
-    //     } catch (error) {
-    //         console.error('Fehler beim Generieren des Textes:', error);
-    //         res.status(500).json({ error: 'Fehler bei der Textgenerierung' });
-    //     }
-    // });
-
-    try {
-        const response = await axios(requestOptions);
-        const summary = response.data.choices[0].text.trim();
-        res.status(200).json({ summary });
-    } catch (error) {
-        console.error('Error fetching wiki summary:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
-});
-
 app.get('/', (req, res) => {
     res.send('Welcome to the Starbugs API');
 });
