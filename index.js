@@ -45,7 +45,7 @@ const corsOptions = {
   }
 };
 
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 
 // Routes
@@ -75,7 +75,30 @@ app.post('/api/wiki-summary', async (req, res) => {
     res.status(500).json({ error: 'Fehler beim Abrufen der Zusammenfassung' });
   }
 });
-
+// Function to extract the title from the Wikipedia URL
+function extractTitleFromUrl(url) {
+    const regex = /\/wiki\/([^#]+)/;
+    const match = url.match(regex);
+    return match ? decodeURIComponent(match[1]) : null;
+  }
+  // API endpoint to get Wikipedia article summary
+  app.get('/wiki-summary', async (req, res) => {
+    const wikipediaUrl = req.query.url;
+    if (!wikipediaUrl) {
+      return res.status(400).json({ error: 'URL parameter is required' });
+    }
+    const title = extractTitleFromUrl(wikipediaUrl);
+    if (!title) {
+      return res.status(400).json({ error: 'Invalid Wikipedia URL' });
+    }
+    try {
+      const response = await axios.get(`https://en.wikipedia.org/api/rest_v1/page/summary/${title}`);
+      const summary = response.data.extract;
+      res.json({ summary });
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching Wikipedia summary' });
+    }
+  });
 // Start Server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
