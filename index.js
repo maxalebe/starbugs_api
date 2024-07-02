@@ -10,6 +10,10 @@ const mongoUri = process.env.MONGO_URI;
 const mongoCollection = process.env.MONGO_COLLECTION;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+const openaiClient = new openai.OpenAI({
+    apiKey: OPENAI_API_KEY,
+})
+
 const starSchema = new mongoose.Schema({
     proper: String,
     con: String,
@@ -73,20 +77,45 @@ app.get('/star-data', async (req, res) => {
 app.post('/api/wiki-summary', async (req, res) => {
     const { wikiUrl } = req.body;
 
-    const OPENAI_API_URL = 'https://api.openai.com/v1/completions';
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`
-        },
-        data: JSON.stringify({
-            prompt: `Summarize the Wikipedia page at ${wikiUrl} in two lines.`,
-            max_tokens: 50,
-            temperature: 0.3
-        }),
-        url: OPENAI_API_URL
-    };
+   try {
+            const response = await openaiClient.chat.completions.create({
+                model: 'gpt-4o',
+                messages: [
+                    {
+                        role: 'system',
+                    content: `gib mir einen Satz beschreibung für ${wikiUrl} `,
+                    },
+                ],
+                max_tokens: 100,
+            });
+            res.json({ text: response.choices[0].message.content });
+        } catch (error) {
+            console.error('Fehler beim Generieren des Textes:', error);
+            res.status(500).json({ error: 'Fehler bei der Textgenerierung' });
+        }
+    });
+    
+
+    // app.post('/api/generate-text', async (req, res) => {
+    //     const { starsign } = req.body;
+    
+    //     try {
+    //         const response = await openaiClient.chat.completions.create({
+    //             model: 'gpt-4o',
+    //             messages: [
+    //                 {
+    //                     role: 'system',
+    //                 content: `Gib mir eine spezifische und detaillierte Beschreibung in 100 wörtern für das Sternzeichen ${starsign}. Die Beschreibung soll die themen behandeln Welche Sterne das Sternzeichen bilden, welcher der hellste und größte Stern ist, seit wann das Sternzeichen bekannt ist, die Histeroische Hintergründe und Entdeckungsgeschichten, woher der Name kommt `,
+    //                 },
+    //             ],
+    //             max_tokens: 400,
+    //         });
+    //         res.json({ text: response.choices[0].message.content });
+    //     } catch (error) {
+    //         console.error('Fehler beim Generieren des Textes:', error);
+    //         res.status(500).json({ error: 'Fehler bei der Textgenerierung' });
+    //     }
+    // });
 
     try {
         const response = await axios(requestOptions);
