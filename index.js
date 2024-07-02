@@ -34,7 +34,7 @@ const starSchema = new mongoose.Schema({
 const Star = mongoose.model('Star', starSchema, mongoCollection);
 
 // CORS Setup
-const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5000', "https://newstar.maximebeck.de"];
+const allowedOrigins = ["*"];
 const corsOptions = {
   origin: function (origin, callback) {
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
