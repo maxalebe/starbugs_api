@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const axios = require('axios');
 const app = express();
+const openai = require('openai');
 
 const port = process.env.API_PORT || 3000;
 const mongoUri = process.env.MONGO_URI;
